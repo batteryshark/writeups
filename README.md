@@ -1,6 +1,6 @@
 # CodeCrashers 
 A Practical Reversing Blog
-![[Pasted image 20230825185245.png]]
+!(assets/Pasted image 20230825185245.png)[]
 
 # 2023
 [[Go to Shell! Reverse Engineering Kernel Modifications with QEMU and gdb]]
