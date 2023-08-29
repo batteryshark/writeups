@@ -1,8 +1,8 @@
-Welcome to the writeups wiki!
+![](assets/index/cc_logo.png)
 
 Please Make a Selection:
 
-[2023-02-01 Reversing and ASIC-based Arcade Game](https://github.com/batteryshark/writeups/wiki/asic_arcade)
+[2023-02-01 Reversing an ASIC-Assisted Arcade Game](asic_arcade.md)
 
 [2023-01-29 Go To Shell - Reverse Engineering Kernel Modifications with QEMU/gdb](https://github.com/batteryshark/writeups/wiki/Go-to-Shell---Reverse-Engineering-Kernel-Modifications-with-QEMU-gdb)
 
