@@ -1,7 +1,8 @@
 # CodeCrashers 
-A Practical Reversing Blog
-!(assets/Pasted image 20230825185245.png)[]
 
+A Practical Reversing Blog
+
+![title]("assets/Pastedimage20230825185245.png")
 # 2023
 [[Go to Shell! Reverse Engineering Kernel Modifications with QEMU and gdb]]
 [[Reversing an ASIC-Assisted Arcade Game]]
