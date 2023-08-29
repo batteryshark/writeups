@@ -12,23 +12,23 @@ There are a vast assortment of PC-based arcade games - some are well-known, othe
 
 With that, let’s dig up a strange obscurity and give it keyboard support!
 
-![01 1.jpg](01%201.jpg)
+![01 1.jpg](assets/01.jpg)
 
 OK - now we’re in strange territory…
 
 This game came out in 2001 as a sort of ripoff of Crazy Taxi - the player racer around town avoiding obstacles collecting powerups while stopping at pickup and dropoff points around town. Given that this is a scooter and not a taxi, packages such as flowers, toys, and important documents (whatever those are) are carted around while the player tries to make $15,000 to go on vacation.
 
-![fe1.PNG](fe1.png)
+![fe1.PNG](assets/fe1.png)
 
 ### First Time run
 
 The game itself runs fine without any security-related modifications (even on Windows 10). Of course, the input doesn’t work other than a hardcoded “crash the game” key (ESC or F12).
 
-![fe2.PNG](fe2.png)
+![fe2.PNG](assets/fe2.png)
 
 It starts with a simple calibration screen that errors, but doesn’t stop the game from proceeding - eventually, we’ll get this working perfectly as well…
 
-![fe3.PNG](fe3.png)
+![fe3.PNG](assets/fe3.png)
 
 We then hit the attract mode loop and everything seems to be working fine - albeit lacking input.
 
@@ -40,11 +40,11 @@ The HDD contains two partitions
 
 The first partition contains your standard Win9X stuff:
 
-![fe4.PNG](fe4.png)
+![fe4.PNG](assets/fe4.png)
 
 The second partition contains the game root under a directory marked “FRENZY”.
 
-![fe5.PNG](fe5.png)
+![fe5.PNG](assets/fe5.png)
 
 The “FRENZY” directory contains various subdirectories:
 
@@ -61,35 +61,35 @@ Next Step!
 
 Before we dive into game executable (xwin.exe), there’s a library called xio.dll that might be interesting…
 
-![fe6.PNG](fe6.png)
+![fe6.PNG](assets/fe6.png)
 
 Judging from the import table, it appears that this dll is responsible for the IO object and might be the focal-point of our IO modifications!
 
 It also appears to not be stripped (could we be any luckier???)
 
-![fe7.PNG](fe7.png)
+![fe7.PNG](assets/fe7.png)
 
 A number of functions are simply void returned calls to do something to the internal state of XIO and/or talk to the hardware (we’ll jump into this in a sec).
 
-![fe8.PNG](fe8.png)
+![fe8.PNG](assets/fe8.png)
 
 This looks like it’s checking some value and if it’s 0, it sets the value back to the default (3). After all of this, it calls that sub at the bottom with a 6xx number and the value we’re passing…
 
-![fe9.PNG](fe9.png)
+![fe9.PNG](assets/fe9.png)
 
 This looks like some kind of write function - we have the 9x direct hardware access __outbyte here on a conditional… it looks like if the dword at the top is set, it will run another function; if not, it will push the value to hardware directly. At this point, we can assume that the dword at the top is a flag if the OS supports direct hardware access (any Windows before NT).
 
-![fe10.PNG](fe10.png)
+![fe10.PNG](assets/fe10.png)
 
 A quick look at the upper sub confirms - this route uses DeviceIoControl to make the hardware call indirectly (think ioctl for Windows). Just to be sure, let’s xref that dword in the previous function to see where it’s set.
 
-![fe11.PNG](fe11.png)
+![fe11.PNG](assets/fe11.png)
 
 Makes sense - the GetVersion() line where it checks >=0x80000000 is an old trick to determine if a Windows version is NT or later - they don’t support direct IO access due to a number of issues unless it’s from a driver…
 
 OK - so we have the general idea of how it writes - following DeviceIoControl again we find the read function:
 
-![fe12.PNG](fe12.png)
+![fe12.PNG](assets/fe12.png)
 
 Given that we have the general idea- we can now determine that the IO setup of this game works in a pretty straightforward fashion
 
@@ -99,11 +99,11 @@ For clarity, we may want to build a struct in IDA to list the properties that we
 
 We get something like this:
 
-![fe13.PNG](fe13.png)
+![fe13.PNG](assets/fe13.png)
 
 And when we run hex-rays, things begin to look a lot more readable:
 
-![fe14.PNG](fe14.png)
+![fe14.PNG](assets/fe14.png)
 
 From this point, we should start first by trying to get the operator menu or inserting a coin - any of the basic non-movement inputs… just to get a feel for what we’ll be doing the rest of the time.
 
@@ -111,13 +111,13 @@ From this point, we should start first by trying to get the operator menu or ins
 
 The game makes several calls to xio::update() - several due to the fact that it’s hammering this to update all button and lamp states:
 
-![fe15.PNG](fe15.png)
+![fe15.PNG](assets/fe15.png)
 
 Right off-the-cuff, it’s apparent that g_bKeyExec & 8 (or the 4th bit of that value) is a conditional to update the coin counter - looks like we found our coin button.
 
 Looking deeper into the update input state, we can see that various bits are set to control buttons:
 
-![fe16.PNG](fe16.png)
+![fe16.PNG](assets/fe16.png)
 
 Looks like this byte controls buttons (more than likely the operator menu, coin drop, start, and arrow keys on the machine).
 
@@ -127,19 +127,19 @@ To test this theory, let’s use CheatEngine to mess with the values and see wha
 
 First of all, the game calls ChangeDisplaySettingsA to force 640x480:
 
-![fe17.PNG](fe17.png)
+![fe17.PNG](assets/fe17.png)
 
 We can easily nop out this function with no real issues to prevent the global resolution change.
 
 The real work comes from CreateWindowExA:
 
-![fe18.PNG](fe18.png)
+![fe18.PNG](assets/fe18.png)
 
 This is where it pulls the current resolution and sets the window to that size. Unfortunately for us, the game will render a big black window with the game sitting in the lower corner - not exactly what we want… let’s force this to statically render the window at 640x480!
 
 The trick is we need some bytes to play with - ‘push eax’ for height and width are only one byte and we need about 8 or so to do what we want. Although we could shiv a codecave into this and trampoline back or something else, let’s see if we can do this inline…
 
-![fe19.PNG](fe19.png)
+![fe19.PNG](assets/fe19.png)
 
 However, we don’t need GetSystemMetrics for width or its parameter index - so we have about 5 extra bytes… still not enough.
 
@@ -147,7 +147,7 @@ Provided registers are not reused, we can use the GetSystemMetrics call above th
 
 The Result:
 
-![fe20.PNG](fe20.png)
+![fe20.PNG](assets/fe20.png)
 
 There we go - it should be in windowed mode now!
 
@@ -157,31 +157,31 @@ I love this thing! Hats-off to whoever makes it. It’s more than a trainer deve
 
 The first thing we’ll want to do is find out where in the game the g_bKeyExec variable is stored.
 
-![fe21.PNG](fe21.png)
+![fe21.PNG](assets/fe21.png)
 
 From this point, we can fire up CheatEngine and add it as a variable to watch.
 
 While adding an address manually, we tick the pointer checkbox, set the value to byte, and put the address in below:
 
-![fe22.PNG](fe22.png)
+![fe22.PNG](assets/fe22.png)
 
 We load up the game and attach it to CheatEngine and we see that that value is just sitting there which makes sense initially:
 
-![fe23.PNG](fe23.png)
+![fe23.PNG](assets/fe23.png)
 
 Now, we could try to modify the value, but remember that this is an IO set value - it’s going to be firing like every X milliseconds so it will quickly get overwritten - we need to first shut the IO library up so we can set it ourselves.
 
 If we right click on the value, we can select ‘Find out what writes to this address’.
 
-![fe24.PNG](fe24.png)
+![fe24.PNG](assets/fe24.png)
 
 The top one looks like it writes a lot - we can select ‘Add to Codelist’ to keep track of it and give it a fun name. In addition, if we right click on the line in the code list, we can select ‘Replace with Code that Does Nothing’ and it will NOP this value being set for us - it can be restored later on as well.
 
-![fe25.PNG](fe25.png)
+![fe25.PNG](assets/fe25.png)
 
 Now, if we set the value to 8, a coin should be dropped.
 
-![fe26.PNG](fe26.png)
+![fe26.PNG](assets/fe26.png)
 
 Success!!!
 
@@ -195,7 +195,7 @@ Ok, now that we roughly know how the input works, we can construct a dll based o
 
 One of the biggest challenges faced by reversers, exploit developers, anyone really - scope. We could implement our emulator at the DeviceIoControl level and reimplement the IO protocol and it could potentially be super accurate, but maybe not worth the extra effort. In reality, we could probably get away with just telling the game which values we want within sane limits which is why fuzzing is a valuable step.
 
-![fe27.PNG](fe27.png)
+![fe27.PNG](assets/fe27.png)
 
 The original code implementation (https://github.com/batteryshark/feXIOEmulator) contained a proper map of the device calls, but without a proper protocol reimplementation, steering was rather buggy and didn’t work properly.
 
@@ -206,13 +206,13 @@ In reality, the game only needs a few exports:
 
 The current I/O library simplifies things quite a bit.
 
-![fe28.PNG](fe28.png)
+![fe28.PNG](assets/fe28.png)
 
 Because this is C++, it’s also important to keep our data types consistent due to name mangling.
 
 If we were to, say, give lampState an unsigned char value in XIO::selectLamp:
 
-![fe29.PNG](fe29.png)
+![fe29.PNG](assets/fe29.png)
 
 The game wouldn’t link with our library because the method would be: “?selectLamp@XIO@@QAEXE@Z” instead of “?selectLamp@XIO@@QAEXH@Z”
 
@@ -222,7 +222,7 @@ All this time and no mention of what we’re here for… wat!
 
 That’s because the keyboard part itself is relatively simple unless we want to include xinput or multiple input types.
 
-![fe30.PNG](fe30.png)
+![fe30.PNG](assets/fe30.png)
 
 For this game, I used **GetAsyncKeyState()** - made a couple of defines, and set the bits needed to be set for each member function to do its thing. Remember, the original hardware could only send 1 byte back at a time and only once per poll which means that most values are pretty small (0-255).
 
