@@ -40,12 +40,12 @@ Please Make a Selection:
 
 
 ## 2014
-[2014-10-03 Hacking 'I Wanna be the Boshy' Game Saves](https://github.com/batteryshark/writeups/wiki/Hacking-IWBTB-Game-Saves)
+[2014-10-03 Hacking 'I Wanna be the Boshy' Game Saves](Hacking-IWBTB-Game-Saves.md)
 
-[2014-08-07 Hacking 'Clocktower - The First Fear'](https://github.com/batteryshark/writeups/wiki/Hacking-Clocktower-The-First-Fear)
+[2014-08-07 Hacking 'Clocktower - The First Fear'](Hacking-Clocktower-The-First-Fear.md)
 
-[2014-06-19 Compatibility Patching for Classic PC Games](https://github.com/batteryshark/writeups/wiki/Compatibility-Patching-for-Classic-PC-Games)
+[2014-06-19 Compatibility Patching for Classic PC Games](Compatibility-Patching-for-Classic-PC-Games.md)
 ## 2013
-[2013-12-23 pwning a SafeNET Microdog](https://github.com/batteryshark/writeups/wiki/pwning-a-SafeNET-Microdog)
+[2013-12-23 pwning a SafeNET Microdog](pwning-a-SafeNET-Microdog.md)
 
-[2013-11-12 Culdcept Series](https://github.com/batteryshark/writeups/wiki/Culdcept-Series)
+[2013-11-12 Culdcept Series](Culdcept-Series.md)
